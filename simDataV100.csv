@@ -13,8 +13,8 @@ num_envs,num_actors,num_dofs,num_bodies,energy,env
 8192,2,6,8,0.0001724333926,BallBalance
 16384,2,6,8,0.0002499694221,BallBalance
 32768,2,6,8,0.00042620688,BallBalance
-2048,1,2,3,8.24E-05,Cartpole
-4096,1,2,3,9.13E-05,Cartpole
+2048,1,2,3,0.000082,Cartpole
+4096,1,2,3,0.000091,Cartpole
 8192,1,2,3,0.0001220738701,Cartpole
 16384,1,2,3,0.0002048707279,Cartpole
 32768,1,2,3,0.0002932108389,Cartpole

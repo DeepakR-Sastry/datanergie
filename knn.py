@@ -1,17 +1,30 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from math import sqrt
+import numpy as np
+
+# Function to calculate MAPE
+def mean_absolute_percentage_error(y_true, y_pred): 
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    non_zero_elements = y_true != 0  # To avoid division by zero
+    return np.mean(np.abs((y_true[non_zero_elements] - y_pred[non_zero_elements]) / y_true[non_zero_elements])) * 100
+
+
+def symmetric_mean_absolute_percentage_error(y_true, y_pred):
+    return np.mean(np.abs((y_true - y_pred) / ((np.abs(y_true) + np.abs(y_pred)) / 2))) * 100
 
 # Read the CSV into a pandas DataFrame
-df = pd.read_csv("simDataA100.csv")  # replace 'your_file.csv' with your actual filename
+df = pd.read_csv("trainDataA100.csv")
 unique_envs = df['env'].unique()
-total_rmse = 0  # Initialize sum of RMSEs
+total_rmse = 0
 total_mae = 0
-num_envs = len(unique_envs)  # Number of unique environments
+total_mape = 0
+total_smape = 0
+num_envs = len(unique_envs)
+
 # Separate by environments
-unique_envs = df['env'].unique()
 for env in unique_envs:
     # Split the data into training and test sets
     train_df = df[df['env'] != env]
@@ -25,9 +38,9 @@ for env in unique_envs:
 
     # Scale the features
     scaler = StandardScaler()
-    scaler.fit(X_train)  # fit only on training data
+    scaler.fit(X_train)
     X_train_scaled = scaler.transform(X_train)
-    X_test_scaled = scaler.transform(X_test)  # use the same scaling as training data
+    X_test_scaled = scaler.transform(X_test)
 
     # Train the KNN model
     knn = KNeighborsRegressor(n_neighbors=5)
@@ -37,12 +50,28 @@ for env in unique_envs:
     y_pred = knn.predict(X_test_scaled)
     rmse = sqrt(mean_squared_error(y_test, y_pred))
     mae = mean_absolute_error(y_test, y_pred)
+    mape = mean_absolute_percentage_error(y_test, y_pred)
+    smape = symmetric_mean_absolute_percentage_error(y_test, y_pred)
+    print(f"Evaluation on held-out environment '{env}':")
+    print(f"RMSE = {rmse}")
+    print(f"MAE = {mae}")
+    print(f"MAPE = {mape}%")
+    print(f"SMAPE = {smape}%")
 
-    print(f"Evaluation on held-out environment '{env}': RMSE = {rmse}")
+
     total_rmse += rmse
     total_mae += mae
+    total_mape += mape
+    total_smape += smape
 
-average_rmse = total_rmse/num_envs
+
+average_rmse = total_rmse / num_envs
 average_mae = total_mae / num_envs
-print("Average RMSE: " + str(average_rmse))
-print("Average MAE: " + str(average_mae))
+average_mape = total_mape / num_envs
+average_smape = total_smape / num_envs
+
+print("Average RMSE:", average_rmse)
+print("Average MAE:", average_mae)
+print("Average MAPE:", average_mape)
+print("Average SMAPE:", average_smape)
+
